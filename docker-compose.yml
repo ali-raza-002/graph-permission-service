@@ -1,0 +1,91 @@
+name: warden
+
+# Keys have no defaults on purpose. Put fresh values in a .env next to this file, e.g.
+#   WARDEN_BOOTSTRAP_ADMIN_KEY=$(openssl rand -base64 32)
+#   WARDEN_CONSOLE_API_KEY=wdn_console1_$(openssl rand -hex 24)
+#   WORKSPACES_WARDEN_API_KEY=wdn_demoapp1_$(openssl rand -hex 24)
+# Published ports bind to 127.0.0.1 only; the console has no login of its own unless
+# CONSOLE_BASIC_AUTH is set.
+
+x-python: &python
+  build:
+    context: .
+    dockerfile: docker/python.Dockerfile
+  environment: &python-env
+    WARDEN_DATABASE_URL: postgresql+asyncpg://warden:warden@postgres:5432/warden
+    WARDEN_CACHE_BACKEND: redis
+    WARDEN_REDIS_URL: redis://redis:6379/0
+    WARDEN_BOOTSTRAP_ADMIN_KEY: ${WARDEN_BOOTSTRAP_ADMIN_KEY:?set WARDEN_BOOTSTRAP_ADMIN_KEY}
+    WARDEN_CONSOLE_API_KEY: ${WARDEN_CONSOLE_API_KEY:?set WARDEN_CONSOLE_API_KEY}
+    WARDEN_CORS_ORIGINS: '["http://localhost:3106"]'
+    WARDEN_LOG_JSON: "true"
+    WORKSPACES_DATABASE_URL: postgresql+asyncpg://warden:warden@postgres:5432/warden
+    WORKSPACES_WARDEN_URL: http://api:8106
+    WORKSPACES_WARDEN_API_KEY: ${WORKSPACES_WARDEN_API_KEY:?set WORKSPACES_WARDEN_API_KEY}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: warden
+      POSTGRES_PASSWORD: warden
+      POSTGRES_DB: warden
+    ports: ["127.0.0.1:5506:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U warden"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", ""]
+    ports: ["127.0.0.1:6406:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  # Idempotent: loads the demo data on first start and leaves it alone afterwards.
+  # `docker compose run --rm seed python scripts/seed.py --reset` rebuilds it.
+  seed:
+    <<: *python
+    command: ["python", "scripts/seed.py"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    <<: *python
+    command: ["warden"]
+    ports: ["127.0.0.1:8106:8106"]
+    depends_on:
+      seed: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8106/healthz')"]
+      interval: 5s
+      retries: 20
+
+  demo:
+    <<: *python
+    command: ["python", "-m", "workspaces"]
+    ports: ["127.0.0.1:27106:27106"]
+    depends_on:
+      api: { condition: service_healthy }
+
+  web:
+    build: ./web
+    environment:
+      WARDEN_API_URL: http://api:8106
+      WARDEN_API_KEY: ${WARDEN_CONSOLE_API_KEY:?set WARDEN_CONSOLE_API_KEY}
+      WORKSPACES_API_URL: http://demo:27106
+      CONSOLE_BASIC_AUTH: ${CONSOLE_BASIC_AUTH:-}
+    ports: ["127.0.0.1:3106:3106"]
+    depends_on:
+      api: { condition: service_healthy }
+      demo: { condition: service_started }
+
+volumes:
+  pgdata:

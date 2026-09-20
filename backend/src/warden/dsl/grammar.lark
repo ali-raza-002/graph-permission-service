@@ -1,0 +1,44 @@
+// Warden authorization model DSL.
+// Operator precedence, tightest first: "but not", "and", "or".
+
+start: header? type_def*
+
+header: "model" "schema" SCHEMA_VERSION
+
+type_def: "type" NAME relations?
+
+relations: "relations" relation_def+
+
+relation_def: "define" NAME ":" expr
+
+?expr: union
+
+?union: intersection ("or" intersection)*
+
+?intersection: exclusion ("and" exclusion)*
+
+// Left-associative: "a but not b but not c" means "(a but not b) but not c".
+?exclusion: primary ("but" "not" primary)*
+
+?primary: direct
+        | computed
+        | tuple_to_userset
+        | "(" expr ")"
+
+direct: "[" type_ref ("," type_ref)* ","? "]"
+
+type_ref: NAME                -> plain_type
+        | NAME ":" "*"        -> wildcard_type
+        | NAME "#" NAME       -> userset_type
+
+computed: NAME
+
+tuple_to_userset: NAME "from" NAME
+
+SCHEMA_VERSION: /\d+\.\d+/
+NAME: /[A-Za-z_][A-Za-z0-9_-]*/
+COMMENT: /\/\/[^\n]*/
+
+%import common.WS
+%ignore WS
+%ignore COMMENT

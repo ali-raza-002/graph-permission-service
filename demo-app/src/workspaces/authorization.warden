@@ -1,0 +1,39 @@
+model
+  schema 1.1
+
+type user
+
+type org
+  relations
+    define admin: [user]
+    define member: [user] or admin
+
+type team
+  relations
+    define org: [org]
+    define lead: [user]
+    define member: [user, team#member] or lead
+
+type folder
+  relations
+    define org: [org]
+    define parent: [folder]
+    define owner: [user]
+    define editor: [user, team#member] or owner or editor from parent or admin from org
+    define viewer: [user, user:*, team#member, org#member] or editor or viewer from parent
+
+type document
+  relations
+    define org: [org]
+    define parent: [folder]
+    define owner: [user]
+    define blocked: [user]
+    define editor: [user, team#member] or owner or editor from parent
+    define viewer: [user, user:*, team#member, org#member] or editor or viewer from parent
+    define can_view: viewer but not blocked
+    define can_edit: editor but not blocked
+    // External collaborators may edit, but only org members can reshare.
+    define can_share: owner or (can_edit and member from org)
+    define can_delete: owner or admin from org
+    // Blocking people and revoking other people's shares is reserved for the owner and org admins.
+    define can_manage_access: owner or admin from org

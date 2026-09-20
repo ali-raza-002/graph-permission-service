@@ -1,0 +1,22 @@
+[project]
+name = "warden-sdk"
+version = "0.1.0"
+description = "Typed async Python client for the Warden authorization service"
+requires-python = ">=3.12"
+dependencies = ["httpx>=0.27", "pydantic>=2.7"]
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.110"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/warden_sdk"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error"]
