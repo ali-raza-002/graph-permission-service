@@ -78,7 +78,7 @@ export function DslEditor({
       loading={<Skeleton className="h-full w-full rounded-none" />}
       options={{
         readOnly,
-        fontFamily: 'ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace',
+        fontFamily: '"JetBrains Mono Variable", ui-monospace, Menlo, monospace',
         fontSize: 13,
         lineHeight: 21,
         minimap: { enabled: false },
