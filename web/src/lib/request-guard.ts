@@ -52,9 +52,7 @@ export function rejectUnsafeRequest(request: GuardedRequest): Rejection | null {
   return null;
 }
 
-function constantTimeEqual(a: string, b: string): boolean {
-  const left = new TextEncoder().encode(a);
-  const right = new TextEncoder().encode(b);
+function constantTimeEqual(left: Uint8Array, right: Uint8Array): boolean {
   let diff = left.length ^ right.length;
   for (let i = 0; i < Math.max(left.length, right.length); i += 1) {
     diff |= (left[i] ?? 0) ^ (right[i] ?? 0);
@@ -65,11 +63,13 @@ function constantTimeEqual(a: string, b: string): boolean {
 /** Whether an Authorization header carries the expected `user:password` basic credentials. */
 export function basicAuthMatches(header: string | null, expected: string): boolean {
   if (!header?.startsWith("Basic ")) return false;
-  let decoded: string;
+  let decoded: Uint8Array;
   try {
-    decoded = atob(header.slice("Basic ".length).trim());
+    // atob yields one character per byte; browsers send the credentials as UTF-8 bytes, so
+    // compare bytes rather than re-encoding that byte string.
+    decoded = Uint8Array.from(atob(header.slice("Basic ".length).trim()), (c) => c.charCodeAt(0));
   } catch {
     return false;
   }
-  return constantTimeEqual(decoded, expected);
+  return constantTimeEqual(decoded, new TextEncoder().encode(expected));
 }

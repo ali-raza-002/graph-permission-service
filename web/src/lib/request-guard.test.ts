@@ -52,4 +52,10 @@ describe("basicAuthMatches", () => {
     expect(basicAuthMatches(null, "admin:s3cret")).toBe(false);
     expect(basicAuthMatches("Basic %%%", "admin:s3cret")).toBe(false);
   });
+
+  it("matches passwords outside ASCII, which browsers send as UTF-8", () => {
+    const utf8 = String.fromCharCode(...new TextEncoder().encode("admin:pässwörd-ß"));
+    expect(basicAuthMatches(`Basic ${btoa(utf8)}`, "admin:pässwörd-ß")).toBe(true);
+    expect(basicAuthMatches(`Basic ${btoa(utf8)}`, "admin:passwort-ss")).toBe(false);
+  });
 });
