@@ -4,6 +4,7 @@ flusher, store deletion, resolution limits and garbage collection."""
 from __future__ import annotations
 
 import asyncio
+import os
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -230,12 +231,12 @@ async def test_key_management_needs_its_own_scope(
 async def test_redis_cache_shares_results_and_degrades_to_a_miss(
     client_factory: ClientFactory,
 ) -> None:
-    redis_url = "redis://127.0.0.1:6406/15"
+    redis_url = os.environ.get("WARDEN_TEST_REDIS_URL", "redis://127.0.0.1:6406/15")
     probe = Redis.from_url(redis_url, socket_timeout=0.25)
     try:
         await probe.ping()
     except (RedisError, OSError):
-        pytest.skip("Redis is not reachable on 6406")
+        pytest.skip(f"Redis is not reachable at {redis_url}")
     finally:
         await probe.aclose()
 
