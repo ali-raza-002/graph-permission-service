@@ -103,12 +103,12 @@ export function registerWardenLanguage(monaco: Monaco): void {
     ],
     colors: {
       "editor.background": "#FFFFFF",
-      "editor.lineHighlightBackground": "#F5F5F7",
-      "editorLineNumber.foreground": "#AEAEB2",
-      "editorLineNumber.activeForeground": "#1D1D1F",
-      "editor.selectionBackground": "#B3D7FF",
-      "editorCursor.foreground": "#0071E3",
-      "editorIndentGuide.background1": "#E5E5EA",
+      "editor.lineHighlightBackground": "#F7F5F0",
+      "editorLineNumber.foreground": "#A2A6AE",
+      "editorLineNumber.activeForeground": "#262B34",
+      "editor.selectionBackground": "#CDE2E7",
+      "editorCursor.foreground": "#2E6877",
+      "editorIndentGuide.background1": "#ECE8E0",
     },
   });
   monaco.editor.defineTheme(THEMES.dark, {
@@ -124,13 +124,13 @@ export function registerWardenLanguage(monaco: Monaco): void {
       { token: "delimiter", foreground: "98989D" },
     ],
     colors: {
-      "editor.background": "#1C1C1E",
-      "editor.lineHighlightBackground": "#2C2C2E",
-      "editorLineNumber.foreground": "#636366",
-      "editorLineNumber.activeForeground": "#F5F5F7",
-      "editor.selectionBackground": "#3F638B",
-      "editorCursor.foreground": "#0A84FF",
-      "editorIndentGuide.background1": "#2C2C2E",
+      "editor.background": "#1C1F25",
+      "editor.lineHighlightBackground": "#262A31",
+      "editorLineNumber.foreground": "#5E646E",
+      "editorLineNumber.activeForeground": "#EEECE7",
+      "editor.selectionBackground": "#2F5661",
+      "editorCursor.foreground": "#7CC0CF",
+      "editorIndentGuide.background1": "#2A2E35",
     },
   });
 }
