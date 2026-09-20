@@ -100,7 +100,7 @@ function TupleTable({ storeId, filter }: { storeId: string; filter: TupleFilter 
             <TableHead className="h-10 pl-4 text-[12px]">Object</TableHead>
             <TableHead className="h-10 text-[12px]">Relation</TableHead>
             <TableHead className="h-10 text-[12px]">User</TableHead>
-            <TableHead className="h-10 text-right text-[12px]">Revision</TableHead>
+            <TableHead className="hidden h-10 text-right text-[12px] sm:table-cell">Revision</TableHead>
             <TableHead className="hidden h-10 text-[12px] md:table-cell">Written</TableHead>
             <TableHead className="h-10 w-12 pr-4">
               <span className="sr-only">Actions</span>
@@ -119,7 +119,7 @@ function TupleTable({ storeId, filter }: { storeId: string; filter: TupleFilter 
             : null}
           {rows.map((t) => (
             <TableRow key={t.id} className="h-11 hover:bg-accent/50">
-              <TableCell className="pl-4">
+              <TableCell className="pl-4 whitespace-normal break-all sm:whitespace-nowrap">
                 <Ref value={t.object} />
               </TableCell>
               <TableCell>
@@ -127,10 +127,10 @@ function TupleTable({ storeId, filter }: { storeId: string; filter: TupleFilter 
                   {t.relation}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal break-all sm:whitespace-nowrap">
                 <Ref value={t.user} />
               </TableCell>
-              <TableCell className="text-right text-[13px] tabular-nums">{t.created_revision}</TableCell>
+              <TableCell className="hidden text-right text-[13px] tabular-nums sm:table-cell">{t.created_revision}</TableCell>
               <TableCell className="hidden text-[13px] text-muted-foreground md:table-cell">
                 {timeAgo(t.created_at)}
               </TableCell>
@@ -256,9 +256,9 @@ export function TuplesView({ storeId }: { storeId: string }) {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="tuples" className="space-y-4">
-          <form onSubmit={apply} className="flex flex-wrap items-center gap-2" role="search">
+          <form onSubmit={apply} className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center" role="search">
             <Select value={draft.object_type ?? ALL} onValueChange={(v) => set("object_type", v)}>
-              <SelectTrigger className="h-9 w-40 rounded-lg" aria-label="Object type">
+              <SelectTrigger className="h-9 w-full rounded-lg sm:w-40" aria-label="Object type">
                 <SelectValue placeholder="Any type" />
               </SelectTrigger>
               <SelectContent>
@@ -275,14 +275,14 @@ export function TuplesView({ storeId }: { storeId: string }) {
               placeholder="Object id"
               value={draft.object_id ?? ""}
               onChange={(e) => set("object_id", e.target.value)}
-              className="w-40 font-mono"
+              className="w-full font-mono sm:w-40"
             />
             <Select
               value={draft.relation ?? ALL}
               onValueChange={(v) => set("relation", v)}
               disabled={!draft.object_type}
             >
-              <SelectTrigger className="h-9 w-40 rounded-lg" aria-label="Relation">
+              <SelectTrigger className="h-9 w-full rounded-lg sm:w-40" aria-label="Relation">
                 <SelectValue placeholder="Any relation" />
               </SelectTrigger>
               <SelectContent>
@@ -299,7 +299,7 @@ export function TuplesView({ storeId }: { storeId: string }) {
               placeholder="user:anne"
               value={draft.user ?? ""}
               onChange={(e) => set("user", e.target.value)}
-              className="w-48 font-mono"
+              className="w-full font-mono sm:w-48"
             />
             <Button type="submit" variant="secondary">
               <Search strokeWidth={1.75} /> Filter

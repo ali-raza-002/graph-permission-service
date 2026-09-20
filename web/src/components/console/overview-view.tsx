@@ -28,9 +28,9 @@ const chartConfig = {
 function Kpi({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <Card className="gap-1 py-4">
-      <CardContent className="space-y-1 px-5">
+      <CardContent className="space-y-1 px-4 sm:px-5">
         <p className="text-[13px] text-muted-foreground">{label}</p>
-        <p className="text-[28px] leading-[34px] font-semibold tracking-tight tabular-nums">{value}</p>
+        <p className="text-[22px] leading-[28px] font-semibold tracking-tight tabular-nums sm:text-[28px] sm:leading-[34px]">{value}</p>
         <p className="text-[12px] text-muted-foreground">{detail}</p>
       </CardContent>
     </Card>
@@ -179,7 +179,7 @@ export function OverviewView({ storeId }: { storeId: string }) {
         }
       />
       {overview.error ? <ErrorNotice error={overview.error} /> : null}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Key metrics">
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" aria-label="Key metrics">
         {data ? (
           <>
             <Kpi

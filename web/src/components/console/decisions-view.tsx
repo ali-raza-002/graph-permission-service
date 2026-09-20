@@ -135,19 +135,20 @@ function Decisions({ storeId }: { storeId: string }) {
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="h-10 w-28 pl-4 text-[12px]">Result</TableHead>
-              <TableHead className="h-10 text-[12px]">Subject</TableHead>
-              <TableHead className="h-10 text-[12px]">Relation</TableHead>
-              <TableHead className="h-10 text-[12px]">Object</TableHead>
-              <TableHead className="h-10 text-right text-[12px]">Latency</TableHead>
+              <TableHead className="h-10 text-[12px] sm:hidden">Query</TableHead>
+              <TableHead className="hidden h-10 text-[12px] sm:table-cell">Subject</TableHead>
+              <TableHead className="hidden h-10 text-[12px] sm:table-cell">Relation</TableHead>
+              <TableHead className="hidden h-10 text-[12px] sm:table-cell">Object</TableHead>
+              <TableHead className="hidden h-10 text-right text-[12px] sm:table-cell">Latency</TableHead>
               <TableHead className="hidden h-10 text-right text-[12px] md:table-cell">Revision</TableHead>
-              <TableHead className="h-10 pr-4 text-right text-[12px]">When</TableHead>
+              <TableHead className="hidden h-10 pr-4 text-right text-[12px] sm:table-cell">When</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {decisions.isPending
               ? Array.from({ length: 8 }, (_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={7} className="pl-4">
+                    <TableCell colSpan={8} className="pl-4">
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
                   </TableRow>
@@ -161,20 +162,26 @@ function Decisions({ storeId }: { storeId: string }) {
                 onKeyDown={(e) => (e.key === "Enter" ? open(d.id) : null)}
                 className="h-11 cursor-pointer hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:ring-4 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset data-[selected=true]:bg-primary/10"
                 data-selected={openId === d.id}
-                aria-label={`${d.subject} ${d.relation} ${d.object}`}
+                aria-label={`${verdictLabel(d.allowed, d.result_count)}: ${d.subject} ${d.relation} ${d.object}`}
               >
                 <TableCell className="pl-4">
                   <DecisionBadge allowed={d.allowed} count={d.result_count} />
                 </TableCell>
-                <TableCell className="font-mono text-[12.5px]">{d.subject}</TableCell>
-                <TableCell className="font-mono text-[12.5px]">{d.relation}</TableCell>
-                <TableCell className="max-w-64 truncate font-mono text-[12.5px]">{d.object}</TableCell>
-                <TableCell className="text-right text-[13px] tabular-nums">
+                <TableCell className="py-2 font-mono text-[12.5px] whitespace-normal sm:hidden">
+                  <span className="block">
+                    {d.subject} <span className="text-muted-foreground">→</span> {d.relation}
+                  </span>
+                  <span className="block break-all text-muted-foreground">{d.object}</span>
+                </TableCell>
+                <TableCell className="hidden font-mono text-[12.5px] sm:table-cell">{d.subject}</TableCell>
+                <TableCell className="hidden font-mono text-[12.5px] sm:table-cell">{d.relation}</TableCell>
+                <TableCell className="hidden max-w-64 truncate font-mono text-[12.5px] sm:table-cell">{d.object}</TableCell>
+                <TableCell className="hidden text-right text-[13px] tabular-nums sm:table-cell">
                   {formatMs(d.duration_ms)}
                   {d.cached ? <span className="ml-1 text-muted-foreground">·c</span> : null}
                 </TableCell>
                 <TableCell className="hidden text-right text-[13px] tabular-nums md:table-cell">{d.revision}</TableCell>
-                <TableCell className="pr-4 text-right text-[12px] text-muted-foreground">{timeAgo(d.created_at)}</TableCell>
+                <TableCell className="hidden pr-4 text-right text-[12px] text-muted-foreground sm:table-cell">{timeAgo(d.created_at)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -193,6 +200,11 @@ function Decisions({ storeId }: { storeId: string }) {
       <DecisionSheet storeId={storeId} decisionId={openId} onClose={() => open(null)} />
     </PageBody>
   );
+}
+
+function verdictLabel(allowed: boolean | null, count: number | null | undefined): string {
+  if (allowed === null) return `${count ?? 0} found`;
+  return allowed ? "Allowed" : "Denied";
 }
 
 export function DecisionsView({ storeId }: { storeId: string }) {
