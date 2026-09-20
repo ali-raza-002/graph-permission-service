@@ -1,4 +1,4 @@
-# Python 3.12 matches Docker and CI; 3.13 is accepted where 3.12 is not installed.
+# Python 3.12 matches the Docker image; 3.13 is accepted where 3.12 is not installed.
 PYTHON ?= $(shell command -v python3.12 || command -v python3.13 || echo python3)
 VENV := .venv
 BIN := $(VENV)/bin
@@ -87,7 +87,7 @@ format: ## Apply ruff formatting and autofixes
 	$(BIN)/ruff format .
 
 .PHONY: check
-check: lint typecheck test ## Everything CI runs
+check: lint typecheck test ## Lint, typecheck and every test suite
 
 .PHONY: build
 build: ## Production build of the console
