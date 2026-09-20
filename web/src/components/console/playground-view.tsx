@@ -121,7 +121,7 @@ function CheckPanel({ storeId, model }: { storeId: string; model: AuthorizationM
   const asked = check.variables?.tuple_key;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[340px_1fr]">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[340px_1fr]">
       <form
         className="space-y-5"
         onSubmit={(event) => {
