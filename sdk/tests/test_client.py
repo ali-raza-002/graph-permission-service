@@ -308,3 +308,30 @@ async def test_fastapi_guard_allows_and_denies() -> None:
     assert ok.json() == {"id": "roadmap", "decision": "dec_1"}
     assert denied.status_code == 403
     assert denied.json()["detail"]["decision_id"] == "dec_1"
+
+
+async def test_fastapi_guard_answers_malformed_ids_without_asking_warden() -> None:
+    recorder = Recorder(lambda _: httpx.Response(200, json=_check_payload(True)))
+    warden = _client(recorder)
+    guard = WardenGuard(client=lambda: warden, subject=lambda: "user:anne")
+    can_view = guard.require("viewer", "document", "document_id")
+    app = FastAPI()
+
+    @app.get("/documents/{document_id}")
+    async def read_document(
+        document_id: str, decision: CheckResult = Depends(can_view)
+    ) -> dict[str, str]:
+        return {"id": document_id}
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://app") as http:
+        spaced = await http.get("/documents/q3 plan")
+        hashed = await http.get("/documents/-draft")
+        ok = await http.get("/documents/q3-plan")
+    await warden.aclose()
+
+    assert spaced.status_code == 404
+    assert spaced.json()["detail"]["code"] == "not_found"
+    assert hashed.status_code == 404
+    assert ok.status_code == 200
+    assert len(recorder.requests) == 1

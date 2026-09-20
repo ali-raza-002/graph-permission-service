@@ -168,6 +168,11 @@ async def test_blocked_user_is_denied_with_a_decision_id(app: httpx.AsyncClient)
     assert [d["id"] for d in listing.json()["documents"]] == ["pg-failover-review"]
 
 
+async def test_malformed_document_id_is_not_found(app: httpx.AsyncClient) -> None:
+    response = await _as(app, "anne", "GET", "/api/documents/q3 plan")
+    assert response.status_code == 404
+
+
 async def test_contractor_can_edit_but_not_reshare(app: httpx.AsyncClient) -> None:
     detail = await _as(app, "fatima", "GET", "/api/documents/partner-sla")
     assert detail.json()["permissions"] == {

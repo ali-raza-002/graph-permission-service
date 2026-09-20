@@ -12,6 +12,7 @@ Example::
 # Postponed annotations are deliberately not enabled here: FastAPI resolves the
 # dependency signature at runtime and it refers to per-guard closures.
 
+import re
 from collections.abc import Awaitable, Callable
 from typing import Annotated, Any
 
@@ -22,6 +23,10 @@ from warden_sdk.errors import WardenError
 from warden_sdk.models import CheckResult
 
 type Provider[T] = Callable[..., T] | Callable[..., Awaitable[T]]
+
+# Warden's object id syntax. A path value outside it names nothing Warden could hold a
+# relationship for, so it is answered here instead of surfacing Warden's 422 as an outage.
+_OBJECT_ID = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_\-.@|+=/:]{0,255}$")
 
 
 class WardenGuard:
@@ -54,6 +59,11 @@ class WardenGuard:
             object_id = request.path_params.get(param)
             if object_id is None:
                 raise RuntimeError(f"route has no path parameter named '{param}'")
+            if not _OBJECT_ID.match(object_id):
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail={"code": "not_found", "message": f"no {object_type} '{object_id}'"},
+                )
             obj = f"{object_type}:{object_id}"
             try:
                 result = await client.check(obj, relation, subject)
