@@ -253,7 +253,7 @@ function CheckPanel({ storeId, model }: { storeId: string; model: AuthorizationM
               ) : (
                 <XCircle className="size-9 text-destructive" strokeWidth={1.75} />
               )}
-              <div className="min-w-0 flex-1">
+              <div className="min-w-48 flex-1">
                 <p className="text-[22px] leading-7 font-semibold">{result.allowed ? "Allowed" : "Denied"}</p>
                 <p className="truncate font-mono text-[12.5px] text-muted-foreground">
                   {asked.user} → {asked.relation} on {asked.object}
